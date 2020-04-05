@@ -16,8 +16,11 @@ use PHPMentors\Workflower\Workflow\Activity\ActivityInterface;
 use PHPMentors\Workflower\Workflow\Activity\WorkItem;
 use PHPMentors\Workflower\Workflow\Activity\WorkItemInterface;
 use PHPMentors\Workflower\Workflow\Operation\OperationalInterface;
+use PHPMentors\Workflower\Workflow\Operation\OperationRunnerInterface;
+use PHPMentors\Workflower\Workflow\Participant\ParticipantInterface;
+use PHPUnit\Framework\TestCase;
 
-class WorkflowTest extends \PHPUnit_Framework_TestCase
+class WorkflowTest extends TestCase
 {
     /**
      * @var WorkflowRepositoryInterface
@@ -50,9 +53,6 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function start()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
-
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->start($workflow->getFlowObject('Start'));
 
@@ -76,8 +76,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function allocateWorkItem()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->start($workflow->getFlowObject('Start'));
@@ -96,8 +96,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function startWorkItem()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->start($workflow->getFlowObject('Start'));
@@ -119,8 +119,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function completeWorkItem()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->start($workflow->getFlowObject('Start'));
@@ -164,8 +164,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function completeActivityOnConditionalSequenceFlow($rejected, $nextFlowObjectId)
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->setProcessData(array('rejected' => false));
@@ -205,8 +205,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function selectSequenceFlowOnExclusiveGateway($rejected, $nextFlowObjectId)
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->setProcessData(array('rejected' => false));
@@ -235,8 +235,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function end()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->setProcessData(array('rejected' => false));
@@ -279,8 +279,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function getActivityLog()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('LoanRequestProcess');
         $workflow->setProcessData(array('rejected' => false));
@@ -332,8 +332,8 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function getActivityLogWithMultipleExecutionsOfSameActivity()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('MultipleWorkItemsProcess');
         $workflow->setProcessData(array('satisfied' => false));
@@ -375,32 +375,19 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     */
-    public function injectExpressionLanguage()
-    {
-        $expressionLanguage = \Phake::mock('Symfony\Component\ExpressionLanguage\ExpressionLanguage');
-        \Phake::when($expressionLanguage)->evaluate($this->equalTo('rejected == true'))->thenReturn(true);
-
-        $workflow = $this->workflowRepository->findById('LoanRequestProcess');
-        $workflow->setExpressionLanguage($expressionLanguage);
-
-        $workflow->setProcessData(array('rejected' => false));
-        $workflow->start($workflow->getFlowObject('Start'));
-    }
-
-    /**
-     * @test
      *
      * @since Method available since Release 1.2.0
      */
     public function executeServiceTasks()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
-        $operationRunner = \Phake::mock('PHPMentors\Workflower\Workflow\Operation\OperationRunnerInterface');
-        \Phake::when($operationRunner)->provideParticipant($this->anything(), $this->anything())->thenReturn($participant);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
+        $operationRunner = $this->getMockBuilder(OperationRunnerInterface::class)
+            ->setMethods(['provideParticipant', 'run'])
+            ->getMock();
+        $operationRunner->method('provideParticipant')->willReturn($participant);
         $self = $this;
-        \Phake::when($operationRunner)->run($this->anything(), $this->anything())->thenReturnCallback(function (OperationalInterface $operational, Workflow $workflow) use ($self) {
+        $operationRunner->expects($this->exactly(2))->method('run')->willReturnCallback(function (OperationalInterface $operational, Workflow $workflow) use ($self) {
             static $calls = 0;
 
             ++$calls;
@@ -413,8 +400,6 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
         $workflow->start($workflow->getFlowObject('Start'));
 
         $this->assertThat($workflow->isEnded(), $this->isTrue());
-
-        \Phake::verify($operationRunner, \Phake::times(2))->run($this->anything(), $this->anything());
     }
 
     /**
@@ -424,8 +409,10 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function provideDefaultRoleForWorkflowWithoutLanes()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
+        $participant = $this->getMockBuilder(ParticipantInterface::class)
+            ->setMethods(['hasRole', 'setResource', 'getResource', 'getName', 'getId'])
+            ->getMock();
+        $participant->expects($this->exactly(3))->method('hasRole')->with($this->equalTo(Workflow::DEFAULT_ROLE_ID))->willReturn(true);
 
         $workflow = $this->workflowRepository->findById('NoLanesProcess');
         $workflow->start($workflow->getFlowObject('Start'));
@@ -434,8 +421,6 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
         $workflow->completeWorkItem($workflow->getCurrentFlowObject(), $participant);
 
         $this->assertThat($workflow->isEnded(), $this->isTrue());
-
-        \Phake::verify($participant, \Phake::times(3))->hasRole($this->equalTo(Workflow::DEFAULT_ROLE_ID));
     }
 
     /**
@@ -445,12 +430,14 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
      */
     public function executeSendTasks()
     {
-        $participant = \Phake::mock('PHPMentors\Workflower\Workflow\Participant\ParticipantInterface');
-        \Phake::when($participant)->hasRole($this->anything())->thenReturn(true);
-        $operationRunner = \Phake::mock('PHPMentors\Workflower\Workflow\Operation\OperationRunnerInterface');
-        \Phake::when($operationRunner)->provideParticipant($this->anything(), $this->anything())->thenReturn($participant);
+        $participant = $this->createMock(ParticipantInterface::class);
+        $participant->method('hasRole')->willReturn(true);
+        $operationRunner = $this->getMockBuilder(OperationRunnerInterface::class)
+            ->setMethods(['provideParticipant', 'run'])
+            ->getMock();
+        $operationRunner->method('provideParticipant')->willReturn($participant);
         $self = $this;
-        \Phake::when($operationRunner)->run($this->anything(), $this->anything())->thenReturnCallback(function (OperationalInterface $operational, Workflow $workflow) use ($self) {
+        $operationRunner->expects($this->exactly(2))->method('run')->willReturnCallback(function (OperationalInterface $operational, Workflow $workflow) use ($self) {
             static $calls = 0;
 
             ++$calls;
@@ -465,7 +452,5 @@ class WorkflowTest extends \PHPUnit_Framework_TestCase
         $workflow->start($workflow->getFlowObject('Start'));
 
         $this->assertThat($workflow->isEnded(), $this->isTrue());
-
-        \Phake::verify($operationRunner, \Phake::times(2))->run($this->anything(), $this->anything());
     }
 }
